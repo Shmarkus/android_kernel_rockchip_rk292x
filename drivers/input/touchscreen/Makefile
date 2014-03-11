@@ -86,6 +86,7 @@ obj-$(CONFIG_TOUCHSCREEN_GT8XX)                += rk29_i2c_goodix.o
 obj-$(CONFIG_TOUCHSCREEN_FT5406)	+= ft5406_ts.o
 obj-$(CONFIG_TOUCHSCREEN_FT5306)	+= ft5306_ts.o
 obj-$(CONFIG_TOUCHSCREEN_SITRONIX_A720)	+= sitronix_ts_a720.o
+obj-$(CONFIG_TOUCHSCREEN_ELAN_KTF2K)    += ektf2k.o
 obj-$(CONFIG_TOUCHSCREEN_FT5306_WPX2)        += ft5306_ts_wpx2.o
 obj-$(CONFIG_TOUCHSCREEN_FT5306_AV) += ft5306_ts_av.o
 obj-$(CONFIG_TOUCHSCREEN_GT819)		+= gt819.o
