@@ -37,7 +37,7 @@
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <asm/ioctl.h>
-#include "ektf2k.h"
+#include <linux/i2c/ektf2k.h>
 
 #define PACKET_SIZE		22 	
 
@@ -1679,14 +1679,14 @@ static struct i2c_driver ektf2k_ts_driver = {
 	},
 };
 
-extern int get_pcb_version(void);
+static int get_pcb_version() {
+	return 20;
+}
 
 static int __devinit elan_ktf2k_ts_init(void)
 {
-
-//Temporary hack, 
-//	if (get_pcb_version() < 20)
-//		return -EINVAL;
+	if (get_pcb_version() < 20)
+		return -EINVAL;
 	printk(KERN_INFO "[elan] %s driver version 0x0003: Integrated 2 and 5 fingers together and auto-mapping resolution\n", __func__);
 	return i2c_add_driver(&ektf2k_ts_driver);
 }
@@ -1702,5 +1702,4 @@ module_exit(elan_ktf2k_ts_exit);
 
 MODULE_DESCRIPTION("ELAN KTF2K Touchscreen Driver");
 MODULE_LICENSE("GPL");
-
 

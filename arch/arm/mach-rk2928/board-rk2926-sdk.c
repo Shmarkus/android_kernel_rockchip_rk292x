@@ -82,6 +82,8 @@ extern  int act8931_charge_ok  ;
 static struct spi_board_info board_spi_devices[] = {
 };
 
+
+
 /***********************************************************
 *	rk30  backlight
 ************************************************************/
@@ -436,6 +438,47 @@ struct goodix_platform_data goodix_info = {
 };
 #endif
 
+#if defined(CONFIG_TOUCHSCREEN_ELAN_KTF2K)
+#define TOUCH_RESET_PIN NULL
+#define TOUCH_INT_PIN RK2928_PIN1_PB0
+#include <linux/i2c/ektf2k.h>
+static int EKTH32XX_init_platform_hw(void)
+{
+	printk("EKTH32XX_init_platform_hw\n");
+	gpio_free(TOUCH_RESET_PIN);
+	gpio_free(TOUCH_INT_PIN);
+    	if(gpio_request(TOUCH_RESET_PIN, "EKTH32XX_reset") != 0) {
+      		gpio_free(TOUCH_RESET_PIN);
+      		printk("EKTH32XX_init_platform_hw reset gpio_request error\n");
+      		return -EIO;
+    	}
+
+    	if(gpio_request(TOUCH_INT_PIN, "EKTH32XX_int") != 0){
+      		gpio_free(TOUCH_INT_PIN);
+      		printk("EKTH32XX_init_platform_hw int gpio_request error\n");
+      		return -EIO;
+    	}
+
+	gpio_direction_output(TOUCH_RESET_PIN, 0);
+	gpio_set_value(TOUCH_RESET_PIN,GPIO_LOW);
+	mdelay(20);
+	gpio_direction_input(TOUCH_INT_PIN);
+	mdelay(10);
+	gpio_set_value(TOUCH_RESET_PIN,GPIO_HIGH);
+	msleep(300);
+	return 0;
+}
+struct elan_ktf2k_i2c_platform_data EKTH32XX_info ={
+	//.version=,
+	.abs_x_min=0,
+	.abs_x_max=ELAN_X_MAX,
+	.abs_y_min=0,
+	.abs_y_max=ELAN_Y_MAX,
+	.intr_gpio=TOUCH_INT_PIN,
+	.rst_gpio=TOUCH_RESET_PIN,
+	.init_platform_hw=EKTH32XX_init_platform_hw
+};
+#endif
 
 #if defined(CONFIG_TOUCHSCREEN_SITRONIX_A720)
 
@@ -880,7 +923,7 @@ int rk30_battery_adc_io_init(void){
     	}
 
       #if defined(V86_VERSION_1_1)
-      //ÉÏÉýÑØ
+      //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	//ret = request_irq(IRQ_BOARD_BASE+TPS65910_IRQ_GPIO_R, tps65910_gpio0_r_irq, IRQF_TRIGGER_RISING, "chg_ok", NULL);
       ret = request_threaded_irq( IRQ_BOARD_BASE +TPS65910_IRQ_GPIO_R,
 			 NULL, tps65910_gpio0_r_irq, IRQF_TRIGGER_RISING,
@@ -896,7 +939,7 @@ int rk30_battery_adc_io_init(void){
 }
 
 #if defined(V86_VERSION_1_1)
-static irqreturn_t tps65910_gpio0_r_irq(int irq, void *irq_data)//ÉÏÉýÑØÖÐ¶Ïº¯Êý
+static irqreturn_t tps65910_gpio0_r_irq(int irq, void *irq_data)//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶Ïºï¿½ï¿½ï¿½
 {
 	//printk("-----------------chg_ok_det######### %s\n",__func__);
 	tps65910_charge_ok = 1 ;
@@ -907,7 +950,7 @@ static irqreturn_t tps65910_gpio0_r_irq(int irq, void *irq_data)//ÉÏÉýÑØÖÐ¶Ïº¯Êý
 	return IRQ_HANDLED;
 }
 
-static irqreturn_t tps65910_gpio0_f_irq(int irq, void *irq_data)//ÏÂ½µÑØÖÐ¶Ïº¯Êý
+static irqreturn_t tps65910_gpio0_f_irq(int irq, void *irq_data)//ï¿½Â½ï¿½ï¿½ï¿½ï¿½Ð¶Ïºï¿½ï¿½ï¿½
 {
 	//printk("-----------------chg_no_ok######### %s\n",__func__);
 	tps65910_charge_ok = 0 ;
@@ -1199,6 +1242,17 @@ static struct i2c_board_info __initdata i2c2_info[] = {
 	.irq            = TOUCH_INT_PIN,
 	.platform_data = &sitronix_info,
 },
+#endif
+#if defined(CONFIG_TOUCHSCREEN_ELAN_KTF2K)
+//original:cat /sys/bus/i2c/devices/2-0015/name                        ekt3632
+
+     {
+            .type           = ELAN_KTF2K_NAME,
+            .addr           = 0x15, //10 muudab device: bus: 'i2c': driver_probe_device: matched device 2-0015 with driver elan-ktf2k
+            .flags          = 0,
+            .irq            = TOUCH_INT_PIN, //RK2928_PIN1_PA3, //RK2928_PIN1_PB0
+            .platform_data  = &EKTH32XX_info,
+        },
 #endif
 #if defined (CONFIG_TOUCHSCREEN_GT811_IIC)
 	{
